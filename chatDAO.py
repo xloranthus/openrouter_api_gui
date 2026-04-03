@@ -90,6 +90,9 @@ class ChatDAO:
 
     def _load_messages(self, chat_id: int) -> list[Message]:
         messages_path = self._chat_id_to_messages_path(chat_id)
+        if not os.path.exists(messages_path):
+            return []
+
         messages: list[Message] = []
         with open(messages_path, 'r') as f:
             for line in f:
