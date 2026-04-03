@@ -1,0 +1,13 @@
+
+# IDE
+.idea
+
+# venv
+/venv
+
+# dotenv
+.env
+
+# macOS
+*.DS_Store
+
