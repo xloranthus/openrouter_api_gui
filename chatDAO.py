@@ -1,12 +1,14 @@
 
 import json, os
-from models import Message, Chat, ChatWithMessages
+from models import *
 
 class ChatDAO:
 
     def __init__(self, chats_file, messages_dir):
         self._chats_file = chats_file
         self._messages_dir = messages_dir
+        if not os.path.exists(messages_dir):
+            os.makedirs(messages_dir)
 
 
     def load_chats(self) -> list[Chat]:
@@ -16,7 +18,9 @@ class ChatDAO:
         chats: list[Chat] = []
         with open(self._chats_file, 'r') as f:
             for line in f:
-                chat = json.loads(line)
+                chat_dict = json.loads(line)
+                # chat = Chat(chat_dict['id_'], chat_dict['title'])
+                chat = dict_to_chat(chat_dict)
                 chats.append(chat)
         return chats
 
@@ -29,10 +33,11 @@ class ChatDAO:
         return ChatWithMessages(chat_id, chat_title, messages)
 
 
-    def add_chat(self, chat_title: str) -> None:
+    def add_chat(self, chat_title: str) -> int:
         chats = self.load_chats()
         chat_id = 0 if not chats else chats[-1].id_ + 1
         self._append_chat(Chat(chat_id, chat_title))
+        return chat_id
 
 
     def delete_chat(self, chat_id: int) -> None:
@@ -62,11 +67,9 @@ class ChatDAO:
     def delete_last_message(self, chat_id: int) -> None:
         self._raise_exception_if_chat_does_not_exist(chat_id)
         messages = self._load_messages(chat_id)
-        if not messages:
-            raise Exception(f'cannot delete last message, because there are no messages for chat: "{chat_id}"')
-
-        messages = messages[:-1]
-        self._write_messages(chat_id, messages)
+        if messages:
+            messages = messages[:-1]
+            self._write_messages(chat_id, messages)
 
 
     def _chat_id_to_messages_path(self, chat_id: int) -> str:
@@ -96,30 +99,32 @@ class ChatDAO:
         messages: list[Message] = []
         with open(messages_path, 'r') as f:
             for line in f:
-                message = json.loads(line)
+                message_dict = json.loads(line)
+                # message = Message(message_dict['role'], message_dict['content'])
+                message = dict_to_message(message_dict)
                 messages.append(message)
         return messages
 
 
     def _append_chat(self, chat: Chat) -> None:
         with open(self._chats_file, 'a') as f:
-            f.write(json.dumps(chat) + '\n')
+            f.write(json.dumps(chat.__dict__) + '\n')
 
 
     def _write_chats(self, chats: list[Chat]) -> None:
         with open(self._chats_file, 'w') as f:
             for chat in chats:
-                f.write(json.dumps(chat) + '\n')
+                f.write(json.dumps(chat.__dict__) + '\n')
 
 
     def _append_message(self, chat_id: int, message: Message) -> None:
         messages_path = self._chat_id_to_messages_path(chat_id)
         with open(messages_path, 'a') as f:
-            f.write(json.dumps(message) + '\n')
+            f.write(json.dumps(message.__dict__) + '\n')
 
 
     def _write_messages(self, chat_id: int, messages: list[Message]) -> None:
         messages_path = self._chat_id_to_messages_path(chat_id)
         with open(messages_path, 'w') as f:
             for message in messages:
-                f.write(json.dumps(message) + '\n')
+                f.write(json.dumps(message.__dict__) + '\n')
