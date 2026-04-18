@@ -19,29 +19,30 @@ class ChatDAO:
         with open(self._chats_file, 'r') as f:
             for line in f:
                 chat_dict = json.loads(line)
-                # chat = Chat(chat_dict['id_'], chat_dict['title'])
-                chat = dict_to_chat(chat_dict)
+                chat = Chat(**chat_dict)
                 chats.append(chat)
         return chats
 
 
     def load_chat(self, chat_id: int) -> ChatWithMessages:
-        self._raise_exception_if_chat_does_not_exist(chat_id)
+        self._chatexists_or_valueerror(chat_id)
 
         messages = self._load_messages(chat_id)
         chat_title = self._get_chat_title(chat_id)
-        return ChatWithMessages(chat_id, chat_title, messages)
+        return ChatWithMessages(id_=chat_id, title=chat_title, messages=messages)
 
 
     def add_chat(self, chat_title: str) -> int:
         chats = self.load_chats()
         chat_id = 0 if not chats else chats[-1].id_ + 1
-        self._append_chat(Chat(chat_id, chat_title))
+        self._append_chat(Chat(id_=chat_id, title=chat_title))
         return chat_id
 
 
     def delete_chat(self, chat_id: int) -> None:
-        self._raise_exception_if_chat_does_not_exist(chat_id)
+        self._chatexists_or_valueerror(chat_id)
+
+        os.remove(self._chat_id_to_messages_path(chat_id))
 
         chats = self.load_chats()
         chats = [chat for chat in chats if chat.id_ != chat_id]
@@ -49,7 +50,7 @@ class ChatDAO:
 
 
     def rename_chat(self, chat_id: int, chat_title: str) -> None:
-        self._raise_exception_if_chat_does_not_exist(chat_id)
+        self._chatexists_or_valueerror(chat_id)
 
         chats = self.load_chats()
         for chat in chats:
@@ -60,12 +61,12 @@ class ChatDAO:
 
 
     def add_message(self, chat_id: int, message: Message) -> None:
-        self._raise_exception_if_chat_does_not_exist(chat_id)
+        self._chatexists_or_valueerror(chat_id)
         self._append_message(chat_id, message)
 
 
     def delete_last_message(self, chat_id: int) -> None:
-        self._raise_exception_if_chat_does_not_exist(chat_id)
+        self._chatexists_or_valueerror(chat_id)
         messages = self._load_messages(chat_id)
         if messages:
             messages = messages[:-1]
@@ -81,9 +82,9 @@ class ChatDAO:
         return bool([chat for chat in chats if chat.id_ == chat_id])
 
 
-    def _raise_exception_if_chat_does_not_exist(self, chat_id: int):
+    def _chatexists_or_valueerror(self, chat_id: int):
         if not self._chat_exists(chat_id):
-            raise Exception(f'chat does not exist: "{chat_id}"')
+            raise ValueError(f'chat does not exist: "{chat_id}"')
 
 
     def _get_chat_title(self, chat_id: int) -> str:
@@ -100,8 +101,7 @@ class ChatDAO:
         with open(messages_path, 'r') as f:
             for line in f:
                 message_dict = json.loads(line)
-                # message = Message(message_dict['role'], message_dict['content'])
-                message = dict_to_message(message_dict)
+                message = Message(**message_dict)
                 messages.append(message)
         return messages
 

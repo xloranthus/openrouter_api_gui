@@ -1,46 +1,54 @@
 
-
-class Message:
-    def __init__(self, role: str, content: str):
-        if role not in ('user', 'assistant'):
-            raise Exception(f'invalid role: "{role}"')
-        self.role = role
-        self.content = content
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+from enum import Enum
 
 
-    def __str__(self):
-        return str(self.__dict__)
+# String Enum (best for APIs)
+class Role(str, Enum):
+    USER = "user"
+    ASSISTANT = "assistant"
 
 
-def dict_to_message(dict_: dict) -> Message:
-    return Message(dict_['role'], dict_['content'])
+class Message(BaseModel):
+    role: Role
+    content: str = Field(pattern=r'[^\s]+')
 
 
-class Chat:
-    def __init__(self, id_: int, title: str):
-        self.id_ = id_
-        self.title = title
+class Chat(BaseModel):
+    id_: int = Field(ge=0)
+    title: str = Field(pattern=r'[^\s]+')
 
-
-    def __str__(self):
-        return str(self.__dict__)
-
-
-def dict_to_chat(dict_: dict) -> Chat:
-    return Chat(dict_['id_'], dict_['title'])
+    # rename chat title miatt kell
+    model_config = ConfigDict(validate_assignment=True)
 
 
 class ChatWithMessages(Chat):
-    def __init__(self, id_: int, title: str, messages: list[Message]):
-        super().__init__(id_, title)
-        self.messages = messages
+    messages: list[Message]
 
 
-    def __str__(self):
-        return str(self.__dict__)
+class ChatTitleWrapper(BaseModel):
+    chat_title: str = Field(pattern=r'\S+')
 
 
-def dict_to_chatwithmessages(dict_: dict) -> Chat:
-    message_dicts = dict_['messages']
-    messages = [dict_to_message(message_dict) for message_dict in message_dicts]
-    return ChatWithMessages(dict_['id_'], dict_['title'], messages)
+class LLM(str, Enum):
+    CLAUDESONNET46 = 'anthropic/claude-sonnet-4.6'
+    CLAUDEOPUS46 = 'anthropic/claude-opus-4.6'
+    DEEPSEEK32 = 'deepseek/deepseek-v3.2'
+    GEMINI3FLASHPREVIEW = 'google/gemini-3-flash-preview'
+    MINIMAXM25 = 'minimax/minimax-m2.5'
+    MIMO2PRO = 'xiaomi/mimo-v2-pro'
+    MINIMAXM27 = 'minimax/minimax-m2.7'
+    GROK41FAST = 'x-ai/grok-4.1-fast'
+    GPT54 = 'openai/gpt-5.4'
+
+
+class Prompt(BaseModel):
+    model: LLM
+    messages: list[Message]
+
+    # This model does not support assistant message prefill. The conversation must end with a user message.
+    @field_validator('messages')
+    def last_message_from_user(cls, v):
+        assert len(v) > 0 and v[-1].role == Role.USER
+        return v
+
