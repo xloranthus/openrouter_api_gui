@@ -1,4 +1,6 @@
 
+// TODO delete last message
+
 import {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLMs, Prompt} from './models';
 import {Client} from './client';
 

@@ -26,12 +26,22 @@
             overflow-y: auto;
         }
 
-        .sidebar h2 {
-            margin-top: 0;
-            font-size: 18px;
+        .select-model {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: none;
+            background: #34495e;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
         }
 
-        .item {
+        .chat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 10px;
             margin: 5px 0;
             background: #34495e;
@@ -39,9 +49,68 @@
             cursor: pointer;
         }
 
-        .item:hover {
+        .chat:hover {
             background: #3d5a73;
         }
+
+        #addNewChat{
+            background: #1abc9c;
+            font-weight: bold;
+        }
+
+        .chat-text{
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-menu-wrapper{
+            position: relative;
+        }
+
+        .chat-menu{
+            background: transparent;
+            border: none;
+            color: white;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .chat-menu:hover{
+            opacity: 0.7;
+        }
+
+        .dropdown{
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            color: black;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            min-width: 100px;
+            z-index: 10;
+
+            display: none; /* this will be toggled by JS */
+        }
+
+        .dropdown-item{
+            border-radius: 5px;
+            padding: 8px 10px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #eee;
+        }
+
+        .delete {
+            color: red;
+        }
+
+
 
         /* Main */
         .main {
@@ -62,6 +131,10 @@
             flex-direction: column;
             gap: 10px;
             min-width: 0; /* critical for flexbox wrapping */
+        }
+
+        .title{
+            font-size: 18px;
         }
 
         .message {
@@ -94,7 +167,7 @@
             border-top: 1px solid #ccc;
         }
 
-        .input-container input {
+        .input-container textarea {
             flex: 1;
             padding: 10px;
             border: none;
@@ -122,67 +195,162 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <h2>Items</h2>
-    <div class="item" onclick="addNewItem()" style="background:#1abc9c; font-weight:bold;">+ Add New Item</div>
-    <div id="itemList">
-        <div class="item">Item 1</div>
-        <div class="item">Item 2</div>
-        <div class="item">Item 3</div>
+    <select class="select-model">
+        <option>Option 1</option>
+        <option>Option 2</option>
+        <option>Option 3</option>
+    </select>
+    <div id="addNewChat" class="chat" onclick="addNewChat()">New chat</div>
+    <div id="chatList">
+        <div class="chat">
+            <span class="chat-text">Chat 1</span>
+            <div class="chat-menu-wrapper">
+                <button class="chat-menu">...</button>
+                <div class="dropdown">
+                    <div class="dropdown-item rename">Rename</div>
+                    <div class="dropdown-item delete">Delete</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat">
+            <span class="chat-text">Chat 2</span>
+            <div class="chat-menu-wrapper">
+                <button class="chat-menu">...</button>
+                <div class="dropdown">
+                    <div class="dropdown-item rename">Rename</div>
+                    <div class="dropdown-item delete">Delete</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat">
+            <span class="chat-text">Chat 3</span>
+            <div class="chat-menu-wrapper">
+                <button class="chat-menu">...</button>
+                <div class="dropdown">
+                    <div class="dropdown-item rename">Rename</div>
+                    <div class="dropdown-item delete">Delete</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Main Chat Area -->
 <div class="main">
     <div id="messages" class="messages">
-        <div class="message">Welcome! Start typing below.</div>
+        <div class="title">This is a very long title for a custom chat, what do you think about it? This is a very long title for a custom chat, what do you think about it? This is a very long title for a custom chat, what do you think about it?</div>
     </div>
 
     <div class="input-container">
-        <input type="text" id="inputBox" placeholder="Type a message...">
+        <textarea id="inputBox" placeholder="Type a message..."></textarea>
         <button onclick="addText()">Send</button>
     </div>
 </div>
 
 <script>
     let messageCount = 0;
+    let activeDropdown = null;
+
+    function toggleDropdown(e){
+        console.log('toggleDropdown');
+        e.stopPropagation();
+        const el = e.target;
+        if(el.className === 'chat-menu'){
+            const dropdown = el.nextElementSibling;
+            if(activeDropdown && dropdown === activeDropdown){
+                activeDropdown.style.display = 'none';
+                activeDropdown = null;
+            }else{
+                if(activeDropdown){
+                    activeDropdown.style.display = 'none';
+                }
+                activeDropdown = dropdown;
+                activeDropdown.style.display = 'block';
+            }
+        }
+    }
+
+    const chatList = document.getElementById('chatList');
+    chatList.addEventListener('click', toggleDropdown);
+
+    function hideDropdownOnExternalClick(e){
+        console.log('hideDropDownOnExternalClick');
+        if(activeDropdown){
+            activeDropdown.style.display = 'none';
+            activeDropdown = null;
+        }
+    }
+
+    document.addEventListener('click', hideDropdownOnExternalClick);
 
     function addText() {
+
         const input = document.getElementById('inputBox');
         const messages = document.getElementById('messages');
 
-        if (input.value.trim() !== '') {
-            const msg = document.createElement('div');
-
-            // Alternate between user and system
-            const type = messageCount % 2 === 0 ? 'user' : 'system';
-            msg.className = 'message ' + type;
-
-            msg.textContent = input.value;
-
-            messages.appendChild(msg);
-            messages.scrollTop = messages.scrollHeight;
-
+        if(input.value.trim() === ''){
             input.value = '';
-            messageCount++;
+            return;
         }
+
+        const msg = document.createElement('div');
+
+        // Alternate between user and system
+        const role = messageCount % 2 === 0 ? 'user' : 'system';
+        msg.className = 'message ' + role;
+
+        msg.textContent = input.value.trim();
+
+        messages.appendChild(msg);
+        messages.scrollTop = messages.scrollHeight;
+
+        messageCount++;
+        input.value = '';
     }
 
 
-    function addNewItem() {
-        const itemList = document.getElementById('itemList');
+    function addNewChat() {
+        const chatList = document.getElementById('chatList');
         const name = prompt('Enter new item name:');
 
         if (name && name.trim() !== '') {
-            const newItem = document.createElement('div');
-            newItem.className = 'item';
-            newItem.textContent = name;
-            itemList.appendChild(newItem);
+            const chat = document.createElement('div');
+            const chatText = document.createElement('span');
+            const chatMenuWrapper = document.createElement('div');
+            const chatMenu = document.createElement('button');
+            const chatDropdown = document.createElement('div');
+            const chatRename = document.createElement('div');
+            const chatDelete = document.createElement('div');
+
+            chat.className = 'chat';
+            chatText.className = 'chat-text';
+            chatMenuWrapper.className = 'chat-menu-wrapper';
+            chatMenu.className = 'chat-menu';
+            chatDropdown.className = 'dropdown';
+            chatRename.className = 'dropdown-item rename';
+            chatDelete.className = 'dropdown-item delete';
+
+            chatText.textContent = name.trim();
+            chatMenu.textContent = '...';
+            chatRename.textContent = 'Rename';
+            chatDelete.textContent = 'Delete';
+
+            chatDropdown.append(chatRename, chatDelete);
+            chatMenuWrapper.append(chatMenu, chatDropdown);
+            chat.append(chatText, chatMenuWrapper);
+            chatList.append(chat);
         }
     }
 
-    document.getElementById('inputBox').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') addText();
+
+    document.getElementById('inputBox').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey){
+            e.preventDefault();
+            addText();
+        }
     });
+
+
 </script>
 
 </body>
