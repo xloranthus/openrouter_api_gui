@@ -1,21 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>OpenRouter API GUI</title>
-        <link rel="icon" href="/static/openrouter_logo.ico">
-        <script type="text/javascript" src="/static/script.js"></script>
-        <link rel="stylesheet" href="/static/style.css">
-    </head>
-    <body>
-        <h1>Welcome to OpenRouter API GUI!</h1>
-        <h3>Please choose one from the following options:</h3>
-        <p>
-            <a href="/chats">Chats</a>
-        </p>
-        <p>
-            <a href="{{ url_for('summarizer') }}">Summarizer</a>
-        </p>
-    </body>
-</html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenRouter API GUI</title>
+    <link rel="icon" href="/img/openrouter.ico">
+    <link rel="stylesheet" href="/static/style.css">
+    <script type="module" src="/static/models.js"></script>
+    <script type="module" src="/static/client.js"></script>
+    <script type="module" src="/static/script.js"></script>
+</head>
+<body>
 
+<!-- Sidebar -->
+<div class="sidebar">
+
+    <div id="model-dropdown" class="dropdown">
+        <div class="options"></div>
+    </div>
+
+    <div id="add-chat" class="chat" data-action="add-chat">New chat</div>
+
+    <div id="chats"></div>
+</div>
+
+<!-- Main Chat Area -->
+<div class="chat-area">
+    <div id="active-chat"></div>
+
+    <div class="input-container">
+        <textarea id="inputBox" placeholder="Type a message..."></textarea>
+        <button>Send</button>
+    </div>
+</div>
+
+</body>
+</html>

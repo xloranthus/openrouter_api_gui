@@ -1,5 +1,5 @@
 
-export {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLMs, Prompt};
+export {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLM, Prompt};
 
 class Message{
     constructor(role, content) {
@@ -62,23 +62,25 @@ class ChatTitleWrapper{
     }
 }
 
+class LLM{
+    constructor(name, logo_file) {
+        if(name.trim() === ''){
+            throw TypeError('LLM is missing name.');
+        }
+        this.name = name;
 
-const LLMs = [
-    'Claude Sonnet 4.6',
-    'Claude Opus 4.6',
-    'DeepSeek V3.2',
-    'Gemini 3 Flash Preview',
-    'MiMo-V2-Pro',
-    'MiniMax M2.5',
-    'MiniMax M2.7',
-    'Grok 4.1 Fast',
-    'GPT-5.4'
-];
+        if(logo_file.trim() === ''){
+            throw TypeError('LLM is missing logo file.');
+        }
+        this.logo_file = logo_file;
+    }
+}
+
 
 class Prompt{
     constructor(model, messages) {
-        if(!model in LLMs){
-            throw TypeError(`Invalid model ${model}.`);
+        if(model.trim() === ''){
+            throw TypeError('Prompt is missing model.');
         }
         this.model = model;
 

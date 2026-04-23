@@ -1,4 +1,5 @@
-import {Chat, ChatTitleWrapper, ChatWithMessages, Message} from "./models";
+
+import {Chat, ChatTitleWrapper, ChatWithMessages, Message, LLM} from "/static/models.js";
 
 export class Client{
 
@@ -78,6 +79,17 @@ export class Client{
         const response = await fetch(`${this.API_BASE_URL}/messages?chat_id=${chat_id}`, {
             method: 'DELETE'
         });
+    }
+
+    async loadLLMs(){
+        const response = await fetch(`${this.API_BASE_URL}/llms`);
+        const responseJson = await response.json();
+        const llms = [];
+        responseJson.forEach(obj => {
+            const llm = new LLM(obj.name, obj.logo_file);
+            llms.push(llm);
+        });
+        return llms;
     }
 
     async promptLLM(prompt){

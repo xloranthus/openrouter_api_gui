@@ -1,6 +1,7 @@
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from enum import Enum
+import os
 
 
 # String Enum (best for APIs)
@@ -30,29 +31,20 @@ class ChatTitleWrapper(BaseModel):
     chat_title: str = Field(pattern=r'\S+')
 
 
-LLMs = {
-    'Claude Sonnet 4.6': 'anthropic/claude-sonnet-4.6',
-    'Claude Opus 4.6': 'anthropic/claude-opus-4.6',
-    'DeepSeek V3.2': 'deepseek/deepseek-v3.2',
-    'Gemini 3 Flash Preview': 'google/gemini-3-flash-preview',
-    'MiMo-V2-Pro': 'xiaomi/mimo-v2-pro',
-    'MiniMax M2.5': 'minimax/minimax-m2.5',
-    'MiniMax M2.7': 'minimax/minimax-m2.7',
-    'Grok 4.1 Fast': 'x-ai/grok-4.1-fast',
-    'GPT-5.4': 'openai/gpt-5.4'
-}
+class LLM(BaseModel):
+    name: str = Field(pattern=r'\S+')
+    openrouter_reference: str = Field(pattern=r'\S+')
+    logo_file: str
+
+    @field_validator('logo_file')
+    def logo_file_exists(cls, v):
+        assert os.path.exists(os.path.join('img', v)), f'Logo file {v} does not exist.'
+        return v
 
 
 class Prompt(BaseModel):
-    model: str
+    model: str = Field(pattern=r'\S+')
     messages: list[Message]
-
-
-    @field_validator('model')
-    def model_in_llms(cls, v):
-        assert v in LLMs.keys(), f'Invalid model {v}.'
-        return LLMs[v]
-
 
     # This model does not support assistant message prefill. The conversation must end with a user message.
     @field_validator('messages')

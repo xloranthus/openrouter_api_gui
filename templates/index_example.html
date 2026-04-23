@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenRouter API GUI</title>
+    <link rel="icon" href="/img/openrouter.ico">
+    <link rel="stylesheet" href="/static/style.css">
+    <script type="module" src="/static/models.js"></script>
+    <script type="module" src="/static/client.js"></script>
+    <script type="module" src="/static/script.js"></script>
+</head>
+<body onload="init();">
+
+<!-- Sidebar -->
+<div class="sidebar">
+
+    <div id="model-dropdown" class="dropdown">
+        <div id="model-0" class="selected model">
+            <img class="model-logo" src="/img/openai.svg" alt="">
+            <span>GPT-5.4</span>
+        </div>
+        <div class="options">
+            <div id="model-1" class="option model" data-action="select-model">
+                <img class="model-logo" src="/img/gemini.png" alt="">
+                <span>Gemini 3 Flash Preview</span>
+            </div>
+            <div id="model-2" class="option model" data-action="select-model">
+                <img class="model-logo" src="/img/claude.svg" alt="">
+                <span>Claude Sonnet 4.6</span>
+            </div>
+            <div id="model-3" class="option model" data-action="select-model">
+                <img class="model-logo" src="/img/claude.svg" alt="">
+                <span>Claude Opus 4.6</span>
+            </div>
+            <div id="model-4" class="option model" data-action="select-model">
+                <img class="model-logo" src="/img/deepseek.png" alt="">
+                <span>DeepSeek V3.2</span>
+            </div>
+            <div id="model-5" class="option model" data-action="select-model">
+                <img class="model-logo" src="/img/xai.png" alt="">
+                <span>Grok Code Fast 4</span>
+            </div>
+            <div id="model-6" class="option model" data-action="select-model">
+                <img class="model-logo" src="/img/xiaomi.png" alt="">
+                <span>MiMo V2 Pro</span>
+            </div>
+            <div id="model-7" class="option model" data-action="select-model">
+                <img class="model-logo" src="/img/minimax.png" alt="">
+                <span>Minimax M2.5</span>
+            </div>
+            <div id="model-8" class="option model" data-action="select-model">
+                <img class="model-logo" src="/img/minimax.png" alt="">
+                <span>Minimax M2.7</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-chat" class="chat" data-action="add-chat">New chat</div>
+
+    <div id="chats">
+        <div id="chat-0" class="chat">
+            <span class="title" data-action="load-chat">Chat 1</span>
+            <div class="dropdown">
+                <button class="selected">...</button>
+                <div class="options">
+                    <div class="option" data-action="rename-chat">Rename</div>
+                    <div class="option" data-action="delete-chat">Delete</div>
+                </div>
+            </div>
+        </div>
+        <div id="chat-1" class="chat">
+            <span class="title" data-action="load-chat">Chat 2</span>
+            <div class="dropdown">
+                <button class="selected">...</button>
+                <div class="options">
+                    <div class="option" data-action="rename-chat">Rename</div>
+                    <div class="option" data-action="delete-chat">Delete</div>
+                </div>
+            </div>
+        </div>
+        <div id="chat-2" class="chat">
+            <span class="title" data-action="load-chat">Chat 3</span>
+            <div class="dropdown">
+                <button class="selected">...</button>
+                <div class="options">
+                    <div class="option" data-action="rename-chat">Rename</div>
+                    <div class="option" data-action="delete-chat">Delete</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Chat Area -->
+<div class="chat-area">
+    <div id="active-chat">
+        <div class="title">Create new or load existing chat to begin.</div>
+    </div>
+
+    <div class="input-container">
+        <textarea id="inputBox" placeholder="Type a message..."></textarea>
+        <button>Send</button>
+    </div>
+</div>
+
+</body>
+</html>

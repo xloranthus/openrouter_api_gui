@@ -5,7 +5,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 import requests, json
+from models import *
+from chatDAO import ChatDAO
 
+
+# load OPENROUTER_API_KEY
 from dotenv import load_dotenv
 load_dotenv()
 import os
@@ -13,12 +17,26 @@ if not os.getenv('OPENROUTER_API_KEY'):
     raise Exception('OPENROUTER API KEY is missing')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 
-from models import *
-from chatDAO import ChatDAO
+
+# load LLMs
+LLMS_FILE = './llms.jsonl'
+if not os.path.exists(LLMS_FILE):
+    raise Exception('Cannot load LLMs. LLMs file does not exist.')
+llms: list[LLM] = []
+with open(LLMS_FILE, 'r') as f:
+    for line in f:
+        llm_dict = json.loads(line)
+        llm = LLM(**llm_dict)
+        llms.append(llm)
+if not llms:
+    raise Exception('No LLMs to choose from.')
+llm_names = [llm.name for llm in llms]
+
 
 app = FastAPI()
 
 app.mount('/static', StaticFiles(directory='static'), name='static')
+app.mount('/img', StaticFiles(directory='img'), name='img')
 templates = Jinja2Templates(directory='templates')
 
 CHATS_FILE = './chats.jsonl'
@@ -29,29 +47,14 @@ chatDAO = ChatDAO(CHATS_FILE, MESSAGES_DIR)
 # Frontend
 # ---------
 
-@app.get('/', name='home_page', response_class=HTMLResponse)
-def home_page(request: Request):
+@app.get('/', name='index', response_class=HTMLResponse)
+def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name='index.html',
         context={}
     )
 
-@app.get('/chats', name='chats', response_class=HTMLResponse)
-def chats_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name='chats.html',
-        context={}
-    )
-
-@app.get('/summarizer', name='summarizer', response_class=HTMLResponse)
-def chats_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name='summarizer.html',
-        context={}
-    )
 
 # ---------
 # ChatDAO APIs
@@ -116,11 +119,25 @@ def delete_last_message(chat_id: int):
 
 
 # ---------
+# LLMs API
+# ---------
+
+@app.get('/api/llms', response_class=JSONResponse)
+def load_llms() -> list[LLM]:
+    return llms
+
+
+# ---------
 # OpenRouter API
 # ---------
 
 @app.post('/api/openrouter', response_class=JSONResponse)
 def prompt_llm(prompt: Prompt) -> Message:
+
+    if prompt.model not in llm_names:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'Invalid model {prompt.model}')
+
+    prompt.model = [llm for llm in llms if llm.name == prompt.model][0].openrouter_reference
 
     response = requests.post(
         url='https://openrouter.ai/api/v1/chat/completions',
