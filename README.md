@@ -7,9 +7,7 @@ A web application to chat with LLMs available at OpenRouter using an API key.
 
 Start server
 ```commandline
-uvicorn app:app --host localhost --port 55001
+uvicorn app:app --host <host> --port <port>
 ```
 
-Test server at `localhost:55001/docs`
-
-
+Test server at `<host>:<port>/docs`
