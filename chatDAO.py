@@ -42,7 +42,8 @@ class ChatDAO:
     def delete_chat(self, chat_id: int) -> None:
         self._chatexists_or_valueerror(chat_id)
 
-        os.remove(self._chat_id_to_messages_path(chat_id))
+        if os.path.exists(self._chat_id_to_messages_path(chat_id)):
+            os.remove(self._chat_id_to_messages_path(chat_id))
 
         chats = self.load_chats()
         chats = [chat for chat in chats if chat.id_ != chat_id]
