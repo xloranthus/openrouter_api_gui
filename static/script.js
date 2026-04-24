@@ -4,8 +4,9 @@
 import {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLM, Prompt} from '/static/models.js';
 import {Client} from '/static/client.js';
 
+const HOST = 'localhost';
 const PORT = 55001;
-const API_BASE_URL = `http://localhost:${PORT}/api`;
+const API_BASE_URL = `http://${HOST}:${PORT}/api`;
 
 const client = new Client(API_BASE_URL);
 
@@ -71,7 +72,7 @@ async function initModelDropdownEl(){
 function createModelEl(llm, id){
 
     const divEl = document.createElement('div');
-    divEl.id = `model-${id}`;
+    divEl.id = toModelElId(id);
     divEl.className = 'model';
 
         const imgEl = document.createElement('img');
@@ -99,7 +100,7 @@ async function initChatsEl(){
 function createChatEl(chat){
 
     const chatEl = document.createElement('div');
-    chatEl.id = `chat-${chat.id_}`;
+    chatEl.id = toChatElId(chat.id_);
     chatEl.className = 'chat';
 
         const titleEl = document.createElement('span');
@@ -134,6 +135,22 @@ function createChatEl(chat){
     chatEl.append(titleEl, chatDropdownEl);
 
     return chatEl;
+}
+
+function toModelElId(id){
+    return `model-${id}`;
+}
+
+function fromModelElId(modelElId){
+    return Number(modelElId.replace('model-', ''));
+}
+
+function toChatElId(id){
+    return `chat-${id}`;
+}
+
+function fromChatElId(chatElId){
+    return Number(chatElId.replace('chat-', ''));
 }
 
 function setActiveChatEl(title, messages){
@@ -250,7 +267,7 @@ function selectModel(actionEl){
 function sortModelOptionEls(){
     // sort model options by id
     const modelOptionEls = Array.from(modelDropdownEl.querySelector('.options').children);
-    modelOptionEls.sort((el1, el2) => el1.id.replace('model-', '') - el2.id.replace('model-', ''));
+    modelOptionEls.sort((el1, el2) => fromModelElId(el1.id) - fromModelElId(el2.id));
     modelDropdownEl.querySelector('.options').innerHTML = '';
     modelDropdownEl.querySelector('.options').append(...modelOptionEls);
 }
@@ -275,11 +292,11 @@ async function loadChat(actionEl){
 
     const chatEl = actionEl.closest('.chat');
 
-    if(activeChat && Number(chatEl.id.replace('chat-', '')) === activeChat.id_){
+    if(activeChat && fromChatElId(chatEl.id) === activeChat.id_){
         return;
     }
 
-    const chatWithMessages = await client.loadChat(Number(chatEl.id.replace('chat-', '')));
+    const chatWithMessages = await client.loadChat(fromChatElId(chatEl.id));
 
     setActiveChatEl(chatWithMessages.title, chatWithMessages.messages);
     activeChat = chatWithMessages;
@@ -295,9 +312,9 @@ function renameChat(actionEl){
         return;
     }
 
-    client.renameChat(Number(chatEl.id.replace('chat-', '')), newTitle);
+    client.renameChat(fromChatElId(chatEl.id), newTitle);
     chatEl.querySelector('.title').textContent = newTitle;
-    if(activeChat && Number(chatEl.id.replace('chat-', '')) === activeChat.id_){
+    if(activeChat && fromChatElId(chatEl.id) === activeChat.id_){
         setActiveChatElTitle(newTitle);
         activeChat.title = newTitle;
     }
@@ -311,9 +328,9 @@ function deleteChat(actionEl){
         return;
     }
 
-    client.deleteChat(Number(chatEl.id.replace('chat-', '')));
+    client.deleteChat(fromChatElId(chatEl.id));
     chatsEl.removeChild(chatEl);
-    if(activeChat && Number(chatEl.id.replace('chat-', '')) === activeChat.id_){
+    if(activeChat && fromChatElId(chatEl.id) === activeChat.id_){
         setActiveChatEl(ACTIVE_CHAT_EL_DEFAULT_TITLE);
         activeChat = null;
     }
