@@ -1,5 +1,5 @@
 
-import {Chat, ChatTitleWrapper, ChatWithMessages, Message, LLM} from "/static/models.js";
+import {Chat, ChatTitleWrapper, ChatWithMessages, Message, LLM} from "./models.js";
 
 export class Client{
 
@@ -65,21 +65,20 @@ export class Client{
     }
 
 
-    async addMessage(chat_id, message){
-        const response = await fetch(`${this.API_BASE_URL}/messages?chat_id=${chat_id}`, {
+    // sends userMessage to backend + returns assistantMessage from backend
+    async addMessage(chat_id, llm_name, message){
+        // llm_name = llm_name.replace(' ', '_');
+        const response = await fetch(`${this.API_BASE_URL}/messages?chat_id=${chat_id}&llm_name=${llm_name}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(message)
         });
+        const responseJson = await response.json();
+        return new Message(responseJson.role, responseJson.content);
     }
 
-    async deleteLastMessage(chat_id){
-        const response = await fetch(`${this.API_BASE_URL}/messages?chat_id=${chat_id}`, {
-            method: 'DELETE'
-        });
-    }
 
     async loadLLMs(){
         const response = await fetch(`${this.API_BASE_URL}/llms`);
@@ -90,18 +89,6 @@ export class Client{
             llms.push(llm);
         });
         return llms;
-    }
-
-    async promptLLM(prompt){
-        const response = await fetch(`${this.API_BASE_URL}/openrouter`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(prompt)
-        });
-        const responseJson = await response.json();
-        return new Message(responseJson.role, responseJson.content);
     }
 
 }

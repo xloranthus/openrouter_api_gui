@@ -5,4 +5,5 @@ host=localhost
 port=55001
 
 # start server
-uvicorn app:app --host $host --port $port
+cd backend
+uvicorn main:app --host $host --port $port

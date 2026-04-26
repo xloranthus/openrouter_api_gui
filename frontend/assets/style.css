@@ -154,7 +154,7 @@ body {
     background: #eee;
 }
 
-[data-action="delete"] {
+[data-action="delete-chat"] {
     color: red;
 }
 

@@ -66,6 +66,11 @@ class ChatDAO:
         self._append_message(chat_id, message)
 
 
+
+
+
+
+
     def delete_last_message(self, chat_id: int) -> None:
         self._chatexists_or_valueerror(chat_id)
         messages = self._load_messages(chat_id)

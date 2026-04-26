@@ -1,8 +1,7 @@
 
-// TODO delete last message
-
-import {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLM, Prompt} from '/static/models.js';
-import {Client} from '/static/client.js';
+import {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLM} from './models.js';
+import {Client} from './client.js';
+import {createModelEl, createChatEl, toModelElId, fromModelElId, toChatElId, fromChatElId, createActiveChatTitleEl, createActiveChatMessageEl, assert} from './utils.js';
 
 const HOST = 'localhost';
 const PORT = 55001;
@@ -11,6 +10,7 @@ const API_BASE_URL = `http://${HOST}:${PORT}/api`;
 const client = new Client(API_BASE_URL);
 
 const ACTIVE_CHAT_EL_DEFAULT_TITLE = 'Create a new or load an existing chat to begin.';
+const WAITING_FOR_LLM_RESPONSE_MESSAGE = 'Please wait, the AI 🤖 is thinking...';
 
 // globalis valtozok
 const modelDropdownEl = document.getElementById('model-dropdown');
@@ -18,7 +18,7 @@ const chatsEl = document.getElementById('chats');
 const activeChatEl = document.getElementById('active-chat');
 const inputBoxEl = document.getElementById('inputBox');
 let activeDropdownEl = null;
-let activeChat = null;
+let activeChatId = -1; // -1 means no active chat
 
 
 // fentrol lefele, balrol jobbra haladva ezek a funkciok
@@ -69,24 +69,6 @@ async function initModelDropdownEl(){
 
 }
 
-function createModelEl(llm, id){
-
-    const divEl = document.createElement('div');
-    divEl.id = toModelElId(id);
-    divEl.className = 'model';
-
-        const imgEl = document.createElement('img');
-        imgEl.className = 'model-logo';
-        imgEl.src = `/img/${llm.logo_file}`;
-
-        const spanEl = document.createElement('span');
-        spanEl.textContent = llm.name;
-
-    divEl.append(imgEl, spanEl);
-
-    return divEl;
-}
-
 async function initChatsEl(){
 
     const chats = await client.loadChats();
@@ -97,61 +79,6 @@ async function initChatsEl(){
     });
 }
 
-function createChatEl(chat){
-
-    const chatEl = document.createElement('div');
-    chatEl.id = toChatElId(chat.id_);
-    chatEl.className = 'chat';
-
-        const titleEl = document.createElement('span');
-        titleEl.className = 'title';
-        titleEl.dataset.action = 'load-chat';
-        titleEl.textContent = chat.title;
-
-        const chatDropdownEl = document.createElement('div');
-        chatDropdownEl.className = 'dropdown';
-
-            const buttonEl = document.createElement('button');
-            buttonEl.className = 'selected';
-            buttonEl.textContent = '...';
-
-            const optionsEl = document.createElement('div');
-            optionsEl.className = 'options';
-
-                const renameChatEl = document.createElement('div');
-                renameChatEl.className = 'option';
-                renameChatEl.dataset.action = 'rename-chat';
-                renameChatEl.textContent = 'Rename';
-
-                const deleteChatEl = document.createElement('div');
-                deleteChatEl.className = 'option';
-                deleteChatEl.dataset.action = 'delete-chat';
-                deleteChatEl.textContent = 'Delete';
-
-            optionsEl.append(renameChatEl, deleteChatEl);
-
-        chatDropdownEl.append(buttonEl, optionsEl);
-
-    chatEl.append(titleEl, chatDropdownEl);
-
-    return chatEl;
-}
-
-function toModelElId(id){
-    return `model-${id}`;
-}
-
-function fromModelElId(modelElId){
-    return Number(modelElId.replace('model-', ''));
-}
-
-function toChatElId(id){
-    return `chat-${id}`;
-}
-
-function fromChatElId(chatElId){
-    return Number(chatElId.replace('chat-', ''));
-}
 
 function setActiveChatEl(title, messages){
 
@@ -162,25 +89,6 @@ function setActiveChatEl(title, messages){
             activeChatEl.append(createActiveChatMessageEl(message));
         });
     }
-}
-
-function createActiveChatTitleEl(title){
-
-    const titleEl = document.createElement('div');
-    titleEl.className = 'title';
-    titleEl.textContent = title;
-
-    return titleEl;
-}
-
-function createActiveChatMessageEl(message){
-
-    const messageEl = document.createElement('div');
-    messageEl.className = 'message';
-    messageEl.classList.add(message.role);
-    messageEl.textContent = message.content;
-
-    return messageEl;
 }
 
 function setActiveChatElTitle(title){
@@ -280,11 +188,11 @@ async function addChat() {
         return;
     }
 
-    const chat_id = await client.addChat(title.trim());
+    const chatId = await client.addChat(title.trim());
 
-    chatsEl.append(createChatEl(new Chat(chat_id, title)));
+    chatsEl.append(createChatEl(new Chat(chatId, title)));
     setActiveChatEl(title);
-    activeChat = new ChatWithMessages(chat_id, title, []);
+    activeChatId = chatId;
 }
 
 
@@ -292,14 +200,19 @@ async function loadChat(actionEl){
 
     const chatEl = actionEl.closest('.chat');
 
-    if(activeChat && fromChatElId(chatEl.id) === activeChat.id_){
+    if(fromChatElId(chatEl.id) === activeChatId){
         return;
     }
 
     const chatWithMessages = await client.loadChat(fromChatElId(chatEl.id));
 
     setActiveChatEl(chatWithMessages.title, chatWithMessages.messages);
-    activeChat = chatWithMessages;
+    if(chatWithMessages.messages.length > 0 && chatWithMessages.messages[chatWithMessages.messages.length - 1].role === 'user'){
+        activeChatEl.append(createActiveChatMessageEl(new Message('assistant', WAITING_FOR_LLM_RESPONSE_MESSAGE)));
+    }
+    activeChatEl.scrollTop = activeChatEl.scrollHeight;
+
+    activeChatId = chatWithMessages.id_;
 }
 
 
@@ -314,9 +227,8 @@ function renameChat(actionEl){
 
     client.renameChat(fromChatElId(chatEl.id), newTitle);
     chatEl.querySelector('.title').textContent = newTitle;
-    if(activeChat && fromChatElId(chatEl.id) === activeChat.id_){
+    if(fromChatElId(chatEl.id) === activeChatId){
         setActiveChatElTitle(newTitle);
-        activeChat.title = newTitle;
     }
 }
 
@@ -330,9 +242,9 @@ function deleteChat(actionEl){
 
     client.deleteChat(fromChatElId(chatEl.id));
     chatsEl.removeChild(chatEl);
-    if(activeChat && fromChatElId(chatEl.id) === activeChat.id_){
+    if(fromChatElId(chatEl.id) === activeChatId){
         setActiveChatEl(ACTIVE_CHAT_EL_DEFAULT_TITLE);
-        activeChat = null;
+        activeChatId = -1;
     }
 }
 
@@ -342,61 +254,29 @@ async function sendMessage() {
     const input = inputBoxEl.value;
     inputBoxEl.value = '';
 
-    if(input.trim() === '' || !activeChat){
+    if(input.trim() === '' || activeChatId === -1){
         return;
     }
 
     const userMessage = new Message('user', input.trim());
-    await client.addMessage(activeChat.id_, userMessage);
-    activeChatEl.append(createActiveChatMessageEl(userMessage));
-    activeChatEl.scrollTop = activeChatEl.scrollHeight;
-    activeChat.messages.push(userMessage);
-
     const selectedModelName = modelDropdownEl.querySelector('.selected span').textContent;
-    const assistantMessage = await client.promptLLM(new Prompt(selectedModelName, activeChat.messages));
-    await client.addMessage(activeChat.id_, assistantMessage);
-    activeChatEl.append(createActiveChatMessageEl(assistantMessage));
+
+    activeChatEl.append(createActiveChatMessageEl(userMessage));
+    activeChatEl.append(createActiveChatMessageEl(new Message('assistant', WAITING_FOR_LLM_RESPONSE_MESSAGE)));
     activeChatEl.scrollTop = activeChatEl.scrollHeight;
-    activeChat.messages.push(assistantMessage);
+
+    const chatIdBefore = activeChatId;
+    const assistantMessage = await client.addMessage(activeChatId, selectedModelName, userMessage);
+    // if the user has already switched chat
+    if(chatIdBefore !== activeChatId){
+        return;
+    }
+
+    const lastActiveChatMessageEl = activeChatEl.children[activeChatEl.children.length - 1];
+    assert(lastActiveChatMessageEl.className === 'message assistant' && lastActiveChatMessageEl.textContent === WAITING_FOR_LLM_RESPONSE_MESSAGE);
+    activeChatEl.removeChild(lastActiveChatMessageEl);
+    activeChatEl.append(createActiveChatMessageEl(assistantMessage));
+    // ide nem kell scroll, mert az LLM uzenetet az elejetol szeretnenk olvasni
 
 }
-
-
-
-/*
-
-init -> loadLLMs alapjan feltolti model-dropdownt,
-loadChats alapjan feltolti chats-et,
-active-chat-title-be beirja hogy "Create new or load an existing chat to begin"
-globalClickListener-t felveszi document.addEventListener-el.
-
-loadChat/addChat -> activeChatID-t tartsuk szamon h tudjuk h hova kell konyvelni az uziket,
-ha pont az aktiv chatet toroljuk, akkor active-chat-title visszaallitasa alapallapotba,
-ha pont az aktiv chatet rename-eljuk, akkor active-chat-title-t is at kell irni
-
-globalClickListener -> .closest()-el megnezi a .dropdown-t.
-toggleDropdowns() fuggvenynek atadja a .closest() eredmenyet es az activeDropdownEl-t.
-vegul pedig lejatssza az event.target actionMap[data-action] fuggvenyet,
-ami lehet: selectModel, addChat, loadChat, renameChat, deleteChat, sendMessage
-
-toggleDropdowns() fv mukodesehez lehetseges esetek:
-* null - null -> nem kell tenni semmit
-* null - activeDropdownEl -> toggleOff activeDropdownEl, activeDropdownEl = null
-* clickedDropdownEl - null -> toggleOn clickedDropdownEl, activeDropdownEl = clickedDropdownEl
-* clickedDropdownEl == activeDropdownEl -> toggleOff activeDropdownEl, activeDropdownEl = null
-* clickedDropdownEl != activeDropdownEl -> toggleOff activeDropdownEl, toggleOn clickedDropdownEl, activeDropdownEl = clickedDropdownEl
-
-
-extra funkcio lehetne:
-chat-ek sorrendjet dateLastModified szerint DESC-ben tartani,
-tehat uj chat a lista elejere kerul,
-renamed chat a lista elejere kerul,
-sentMessage chat a lista elejere kerul
-es ezt szinkronizalni kell backend-el is.
-
- */
-
-
-
-
 

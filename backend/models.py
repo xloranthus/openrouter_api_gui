@@ -34,21 +34,6 @@ class ChatTitleWrapper(BaseModel):
 class LLM(BaseModel):
     name: str = Field(pattern=r'\S+')
     openrouter_reference: str = Field(pattern=r'\S+')
-    logo_file: str
+    logo_file: str = Field(pattern=r'\S+')
 
-    @field_validator('logo_file')
-    def logo_file_exists(cls, v):
-        assert os.path.exists(os.path.join('img', v)), f'Logo file {v} does not exist.'
-        return v
-
-
-class Prompt(BaseModel):
-    model: str = Field(pattern=r'\S+')
-    messages: list[Message]
-
-    # This model does not support assistant message prefill. The conversation must end with a user message.
-    @field_validator('messages')
-    def last_message_from_user(cls, v):
-        assert len(v) > 0 and v[-1].role == Role.USER, 'This model does not support assistant message prefill. The conversation must end with a user message.'
-        return v
 

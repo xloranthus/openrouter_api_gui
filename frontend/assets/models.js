@@ -1,5 +1,5 @@
 
-export {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLM, Prompt};
+export {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLM};
 
 class Message{
     constructor(role, content) {
@@ -76,22 +76,4 @@ class LLM{
     }
 }
 
-
-class Prompt{
-    constructor(model, messages) {
-        if(model.trim() === ''){
-            throw TypeError('Prompt is missing model.');
-        }
-        this.model = model;
-
-        validateMessages(messages);
-        if(!messages){
-            throw TypeError('Prompt is missing message.');
-        }
-        if(messages[messages.length - 1].role !== 'user'){
-            throw TypeError('This model does not support assistant message prefill. The conversation must end with a user message.');
-        }
-        this.messages = messages;
-    }
-}
 

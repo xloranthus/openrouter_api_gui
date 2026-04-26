@@ -2,11 +2,12 @@
 # IDE
 .idea
 
-# venv
-venv
+# backend
+backend/venv
+backend/.env
+backend/messages
+backend/chats.jsonl
 
-# dotenv
-.env
 
 # macOS
 *.DS_Store
@@ -14,6 +15,3 @@ venv
 # python
 __pycache__
 
-# app specific
-messages
-chats.jsonl
