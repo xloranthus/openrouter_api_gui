@@ -9,6 +9,11 @@ backend/messages
 backend/chats.jsonl
 
 
+# frontend
+frontend/node_modules
+frontend/dist
+
+
 # macOS
 *.DS_Store
 

@@ -186,15 +186,122 @@ body {
     text-align: center;
 }
 
+
 .message {
-    padding: 10px;
-    border-radius: 6px;
+    padding: 10px 14px;
+    border-radius: 8px;
     max-width: 70%;
+
+    line-height: 1.5;
+
     word-wrap: break-word;
     overflow-wrap: break-word;
     word-break: break-word;
     white-space: pre-wrap;
 }
+
+.message p {
+    margin: 0 0 10px 0;
+}
+
+.message p:last-child {
+    margin-bottom: 0;
+}
+
+.message ul,
+.message ol {
+    margin: 6px 0 10px 20px;
+    padding: 0;
+}
+
+.message li {
+    margin: 4px 0;
+}
+
+.message h1,
+.message h2,
+.message h3 {
+    margin: 14px 0 6px 0;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+
+.message strong {
+    font-weight: 600;
+}
+
+
+.message pre {
+    background: #f6f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+
+    padding: 12px 14px;
+    margin: 10px 0;
+
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.message code {
+    background: #f1f1f1;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+
+    padding: 2px 5px;
+    font-size: 13px;
+}
+
+.message pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+
+.message table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-family: system-ui, sans-serif;
+    font-size: 0.95rem;
+
+    /* optional rounded corners */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.message thead {
+    background-color: #f5f5f5;
+}
+
+.message th, .message td {
+    padding: 10px 14px;
+    text-align: left;
+}
+
+.message th {
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.message td {
+    border-bottom: 1px solid #eee;
+}
+
+/* zebra striping */
+.message tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+/* hover effect */
+.message tbody tr:hover {
+    background-color: #f0f7ff;
+}
+
+
 
 .user {
     align-self: flex-end;
@@ -217,6 +324,7 @@ body {
 }
 
 .input-container textarea {
+    font-family: Arial, sans-serif;
     flex: 1;
     padding: 10px;
     border: none;

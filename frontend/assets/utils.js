@@ -1,15 +1,18 @@
 
-export {createModelEl, createChatEl, toModelElId, fromModelElId, toChatElId, fromChatElId, createActiveChatTitleEl, createActiveChatMessageEl, assert};
+import {marked} from 'marked';
+import DOMPurify from "dompurify";
 
-function createModelEl(llm, id){
+export {createModelEl, createChatEl, toChatElId, fromChatElId, createActiveChatTitleEl, createActiveChatMessageEl, assert, markdownToHtml};
+
+
+function createModelEl(llm){
 
     const divEl = document.createElement('div');
-    divEl.id = toModelElId(id);
     divEl.className = 'model';
 
         const imgEl = document.createElement('img');
         imgEl.className = 'model-logo';
-        imgEl.src = `assets/img/${llm.logo_file}`;
+        imgEl.src = `llm_logos/${llm.logo_file}`;
 
         const spanEl = document.createElement('span');
         spanEl.textContent = llm.name;
@@ -61,16 +64,6 @@ function createChatEl(chat){
 }
 
 
-
-
-function toModelElId(id){
-    return `model-${id}`;
-}
-
-function fromModelElId(modelElId){
-    return Number(modelElId.replace('model-', ''));
-}
-
 function toChatElId(id){
     return `chat-${id}`;
 }
@@ -95,7 +88,11 @@ function createActiveChatMessageEl(message){
     const messageEl = document.createElement('div');
     messageEl.className = 'message';
     messageEl.classList.add(message.role);
-    messageEl.textContent = message.content;
+    if(message.role === 'assistant'){
+        messageEl.innerHTML = markdownToHtml(message.content);
+    }else{
+        messageEl.textContent = message.content;
+    }
 
     return messageEl;
 }
@@ -104,5 +101,14 @@ function assert(condition, message){
     if(!condition){
         throw new Error(message || 'Assertion failed.');
     }
+}
+
+function markdownToHtml(md){
+
+    const html = marked(md);
+    const safeHtml = DOMPurify.sanitize(html);
+    console.log(safeHtml);
+    return safeHtml;
+
 }
 

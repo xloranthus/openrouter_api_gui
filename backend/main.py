@@ -133,6 +133,5 @@ def load_llms() -> list[LLM]:
 # Frontend
 # ---------
 
-app.mount('/', StaticFiles(directory='../frontend', html=True))
-
+app.mount('/', StaticFiles(directory='../frontend/dist', html=True))
 

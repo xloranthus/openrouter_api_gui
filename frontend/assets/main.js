@@ -1,7 +1,7 @@
 
 import {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLM} from './models.js';
 import {Client} from './client.js';
-import {createModelEl, createChatEl, toModelElId, fromModelElId, toChatElId, fromChatElId, createActiveChatTitleEl, createActiveChatMessageEl, assert} from './utils.js';
+import {createModelEl, createChatEl, toChatElId, fromChatElId, createActiveChatTitleEl, createActiveChatMessageEl, assert, markdownToHtml} from './utils.js';
 
 const HOST = 'localhost';
 const PORT = 55001;
@@ -55,13 +55,14 @@ function init(){
 async function initModelDropdownEl(){
 
     const llms = await client.loadLLMs();
+    llms.sort((llm1, llm2) => llm1.name.localeCompare(llm2.name));
 
-    const selectedModelEl = createModelEl(llms[0], 0);
+    const selectedModelEl = createModelEl(llms[0]);
     selectedModelEl.classList.add('selected');
     modelDropdownEl.prepend(selectedModelEl);
 
-    for(let i = 1; i <llms.length; ++i){
-        const modelOptionEl = createModelEl(llms[i], i);
+    for(let i = 1; i < llms.length; ++i){
+        const modelOptionEl = createModelEl(llms[i]);
         modelOptionEl.classList.add('option');
         modelOptionEl.dataset.action = 'select-model';
         modelDropdownEl.querySelector('.options').append(modelOptionEl);
@@ -163,8 +164,7 @@ function selectModel(actionEl){
 
     const selectedModelEl = modelDropdownEl.querySelector('.selected');
 
-    // swap id, name and logo_file
-    [actionEl.id, selectedModelEl.id] = [selectedModelEl.id, actionEl.id];
+    // swap name and logo_file
     [actionEl.querySelector('span').textContent, selectedModelEl.querySelector('span').textContent] = [selectedModelEl.querySelector('span').textContent, actionEl.querySelector('span').textContent];
     [actionEl.querySelector('img').src, selectedModelEl.querySelector('img').src] = [selectedModelEl.querySelector('img').src, actionEl.querySelector('img').src];
 
@@ -173,9 +173,9 @@ function selectModel(actionEl){
 }
 
 function sortModelOptionEls(){
-    // sort model options by id
+    // sort model options by name (ascending)
     const modelOptionEls = Array.from(modelDropdownEl.querySelector('.options').children);
-    modelOptionEls.sort((el1, el2) => fromModelElId(el1.id) - fromModelElId(el2.id));
+    modelOptionEls.sort((el1, el2) => el1.querySelector('span').textContent.localeCompare(el2.querySelector('span').textContent));
     modelDropdownEl.querySelector('.options').innerHTML = '';
     modelDropdownEl.querySelector('.options').append(...modelOptionEls);
 }
@@ -273,7 +273,8 @@ async function sendMessage() {
     }
 
     const lastActiveChatMessageEl = activeChatEl.children[activeChatEl.children.length - 1];
-    assert(lastActiveChatMessageEl.className === 'message assistant' && lastActiveChatMessageEl.textContent === WAITING_FOR_LLM_RESPONSE_MESSAGE);
+    assert(lastActiveChatMessageEl.className === 'message assistant' && lastActiveChatMessageEl.textContent.trim() === WAITING_FOR_LLM_RESPONSE_MESSAGE, `lastActiveChatMessageEl.className: ${lastActiveChatMessageEl.className}, ${lastActiveChatMessageEl.textContent}`);
+
     activeChatEl.removeChild(lastActiveChatMessageEl);
     activeChatEl.append(createActiveChatMessageEl(assistantMessage));
     // ide nem kell scroll, mert az LLM uzenetet az elejetol szeretnenk olvasni
