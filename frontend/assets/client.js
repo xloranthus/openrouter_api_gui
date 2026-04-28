@@ -13,7 +13,7 @@ export class Client{
         const responseJson = await response.json();
         const chats = [];
         responseJson.forEach(obj => {
-            const chat = new Chat(obj.id_, obj.title);
+            const chat = new Chat(obj.id_, obj.title, obj.last_modified);
             chats.push(chat);
         });
         return chats;

@@ -74,6 +74,8 @@ async function initChatsEl(){
 
     const chats = await client.loadChats();
 
+    chats.sort((chat1, chat2) => chat2.last_modified.localeCompare(chat1.last_modified));
+
     chats.forEach(chat => {
         const chatEl = createChatEl(chat);
         chatsEl.append(chatEl);
@@ -190,7 +192,7 @@ async function addChat() {
 
     const chatId = await client.addChat(title.trim());
 
-    chatsEl.append(createChatEl(new Chat(chatId, title)));
+    chatsEl.prepend(createChatEl(new Chat(chatId, title)));
     setActiveChatEl(title);
     activeChatId = chatId;
 }
@@ -227,6 +229,8 @@ function renameChat(actionEl){
 
     client.renameChat(fromChatElId(chatEl.id), newTitle);
     chatEl.querySelector('.title').textContent = newTitle;
+    // eloreviszem a chat-et
+    chatsEl.prepend(chatEl);
     if(fromChatElId(chatEl.id) === activeChatId){
         setActiveChatElTitle(newTitle);
     }
@@ -264,9 +268,14 @@ async function sendMessage() {
     activeChatEl.append(createActiveChatMessageEl(userMessage));
     activeChatEl.append(createActiveChatMessageEl(new Message('assistant', WAITING_FOR_LLM_RESPONSE_MESSAGE)));
     activeChatEl.scrollTop = activeChatEl.scrollHeight;
+    // eloreviszem a chat-et
+    const chatEl = chatsEl.querySelector(`#${toChatElId(activeChatId)}`);
+    chatsEl.prepend(chatEl);
 
     const chatIdBefore = activeChatId;
     const assistantMessage = await client.addMessage(activeChatId, selectedModelName, userMessage);
+    // eloreviszem a chat-et
+    chatsEl.prepend(chatEl);
     // if the user has already switched chat
     if(chatIdBefore !== activeChatId){
         return;

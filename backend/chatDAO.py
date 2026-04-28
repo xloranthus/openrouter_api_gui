@@ -1,6 +1,7 @@
 
 import json, os
 from models import *
+from datetime import datetime
 
 class ChatDAO:
 
@@ -35,7 +36,7 @@ class ChatDAO:
     def add_chat(self, chat_title: str) -> int:
         chats = self.load_chats()
         chat_id = 0 if not chats else chats[-1].id_ + 1
-        self._append_chat(Chat(id_=chat_id, title=chat_title))
+        self._append_chat(Chat(id_=chat_id, title=chat_title, last_modified=str(datetime.now())))
         return chat_id
 
 
@@ -50,33 +51,16 @@ class ChatDAO:
         self._write_chats(chats)
 
 
-    def rename_chat(self, chat_id: int, chat_title: str) -> None:
-        self._chatexists_or_valueerror(chat_id)
-
-        chats = self.load_chats()
-        for chat in chats:
-            if chat.id_ == chat_id:
-                chat.title = chat_title
-                break
-        self._write_chats(chats)
+    def rename_chat(self, chat_id: int, chat_title: str):
+        self._modify_chat(chat_id, chat_title)
 
 
     def add_message(self, chat_id: int, message: Message) -> None:
         self._chatexists_or_valueerror(chat_id)
         self._append_message(chat_id, message)
 
-
-
-
-
-
-
-    def delete_last_message(self, chat_id: int) -> None:
-        self._chatexists_or_valueerror(chat_id)
-        messages = self._load_messages(chat_id)
-        if messages:
-            messages = messages[:-1]
-            self._write_messages(chat_id, messages)
+        # last_modified adattagot is modositani kell ha uzenetkuldes tortenik
+        self._modify_chat(chat_id)
 
 
     def _chat_id_to_messages_path(self, chat_id: int) -> str:
@@ -112,6 +96,19 @@ class ChatDAO:
         return messages
 
 
+    def _modify_chat(self, chat_id: int, chat_title: str | None = None) -> None:
+        self._chatexists_or_valueerror(chat_id)
+
+        chats = self.load_chats()
+        for chat in chats:
+            if chat.id_ == chat_id:
+                if chat_title:
+                    chat.title = chat_title
+                chat.last_modified = str(datetime.now())
+                break
+        self._write_chats(chats)
+
+
     def _append_chat(self, chat: Chat) -> None:
         with open(self._chats_file, 'a') as f:
             f.write(json.dumps(chat.__dict__) + '\n')
@@ -127,10 +124,3 @@ class ChatDAO:
         messages_path = self._chat_id_to_messages_path(chat_id)
         with open(messages_path, 'a') as f:
             f.write(json.dumps(message.__dict__) + '\n')
-
-
-    def _write_messages(self, chat_id: int, messages: list[Message]) -> None:
-        messages_path = self._chat_id_to_messages_path(chat_id)
-        with open(messages_path, 'w') as f:
-            for message in messages:
-                f.write(json.dumps(message.__dict__) + '\n')

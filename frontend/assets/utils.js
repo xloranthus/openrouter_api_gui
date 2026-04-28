@@ -107,7 +107,6 @@ function markdownToHtml(md){
 
     const html = marked(md);
     const safeHtml = DOMPurify.sanitize(html);
-    console.log(safeHtml);
     return safeHtml;
 
 }

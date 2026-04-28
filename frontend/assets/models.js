@@ -17,7 +17,7 @@ class Message{
 
 
 class Chat {
-    constructor(id_, title) {
+    constructor(id_, title, last_modified) {
         if(typeof id_ !== 'number'){
             throw TypeError(`Invalid chat ID ${id_}. Chat ID must be an integer.`);
         }
@@ -30,6 +30,11 @@ class Chat {
             throw TypeError('Chat is missing title.');
         }
         this.title = title;
+
+        if(last_modified.trim() === ''){
+            throw TypeError('Chat is missing last modified datetime.');
+        }
+        this.last_modified = last_modified;
     }
 }
 
@@ -44,9 +49,20 @@ function validateMessages(messages){
     });
 }
 
-class ChatWithMessages extends Chat{
+class ChatWithMessages{
     constructor(id_, title, messages) {
-        super(id_, title);
+        if(typeof id_ !== 'number'){
+            throw TypeError(`Invalid chat ID ${id_}. Chat ID must be an integer.`);
+        }
+        if(id_ < 0){
+            throw TypeError(`Invalid chat ID ${id_}. Chat ID must be a non-negative integer.`);
+        }
+        this.id_ = id_;
+
+        if(title.trim() === ''){
+            throw TypeError('Chat is missing title.');
+        }
+        this.title = title;
 
         validateMessages(messages);
         this.messages = messages;
@@ -75,5 +91,3 @@ class LLM{
         this.logo_file = logo_file;
     }
 }
-
-
