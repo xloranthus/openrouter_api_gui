@@ -3,6 +3,13 @@
 
 A web application to chat with LLMs available at OpenRouter using an API key.
 
+## Requirements
+
+* Python version 3.12
+* Node Package Manager (npm) version 11.12.1
+* [OpenRouter](https://openrouter.ai) API key
+
+
 ## Installation
 
 ```commandline
