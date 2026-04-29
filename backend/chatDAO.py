@@ -86,7 +86,7 @@ class ChatDAO:
         if not chats:
             return 0
 
-        chats.sort(key=lambda chat: chat.id)
+        chats.sort(key=lambda chat: chat.id_)
         for idx, chat in enumerate(chats):
             if chat.id_ != idx:
                 return idx

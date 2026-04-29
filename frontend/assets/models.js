@@ -17,6 +17,7 @@ class Message{
 
 
 class Chat {
+
     constructor(id_, title, last_modified) {
         if(typeof id_ !== 'number'){
             throw TypeError(`Invalid chat ID ${id_}. Chat ID must be an integer.`);
@@ -31,10 +32,8 @@ class Chat {
         }
         this.title = title;
 
-        if(last_modified.trim() === ''){
-            throw TypeError('Chat is missing last modified datetime.');
-        }
-        this.last_modified = last_modified;
+        // erre nem ellenorzunk, mert csak akkor adott ha a klienstol erkezik a chat
+        this.last_modified = last_modified
     }
 }
 
