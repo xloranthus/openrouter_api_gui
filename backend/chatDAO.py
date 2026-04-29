@@ -34,8 +34,7 @@ class ChatDAO:
 
 
     def add_chat(self, chat_title: str) -> int:
-        chats = self.load_chats()
-        chat_id = 0 if not chats else chats[-1].id_ + 1
+        chat_id = self._autoincrement_chatid()
         self._append_chat(Chat(id_=chat_id, title=chat_title, last_modified=str(datetime.now())))
         return chat_id
 
@@ -80,6 +79,19 @@ class ChatDAO:
     def _get_chat_title(self, chat_id: int) -> str:
         chats = self.load_chats()
         return [chat for chat in chats if chat.id_ == chat_id][0].title
+
+
+    def _autoincrement_chatid(self) -> int:
+        chats = self.load_chats()
+        if not chats:
+            return 0
+
+        chats.sort(key=lambda chat: chat.id)
+        for idx, chat in enumerate(chats):
+            if chat.id_ != idx:
+                return idx
+
+        return chats[-1].id_ + 1
 
 
     def _load_messages(self, chat_id: int) -> list[Message]:
