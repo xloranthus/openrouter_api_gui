@@ -258,7 +258,29 @@ async function sendMessage() {
     const input = inputBoxEl.value;
     inputBoxEl.value = '';
 
-    if(input.trim() === '' || activeChatId === -1){
+    // shake animation on title
+    if(activeChatId === -1){
+
+        const activeChatTitleEl = activeChatEl.querySelector('.title');
+        if(activeChatTitleEl.classList.contains('shake')){
+            return;
+        }
+
+        activeChatTitleEl.classList.add('shake');
+
+        activeChatTitleEl.addEventListener('animationend', () => {
+            activeChatTitleEl.classList.remove('shake');
+        }, {once: true});
+        /*
+        setTimeout(() => {
+           activeChatTitleEl.classList.remove('shake');
+        }, 1500);
+        */
+
+        return;
+    }
+
+    if(input.trim() === ''){
         return;
     }
 

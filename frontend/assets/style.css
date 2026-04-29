@@ -186,6 +186,16 @@ body {
     text-align: center;
 }
 
+/* shake title if user tries to send a message without an active chat */
+@keyframes shake{
+    0%, 100% {transform: rotate(0) translateX(0);}
+    25%, 75% {transform: rotate(5deg) translateX(10px);}
+    50% {transform: rotate(-5deg) translateX(-10px);}
+}
+
+.shake{
+    animation: shake 1s ease-in-out;
+}
 
 .message {
     padding: 10px 14px;
