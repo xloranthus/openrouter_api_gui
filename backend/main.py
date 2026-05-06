@@ -110,10 +110,14 @@ def add_message(chat_id: int, llm_name: str, user_message: Message):
 
     response_json = response.json()
 
-    assistant_message = Message(
-        role=response_json['choices'][0]['message']['role'],
-        content=response_json['choices'][0]['message']['content']
-    )
+    try:
+        assistant_message = Message(
+            role=response_json['choices'][0]['message']['role'],
+            content=response_json['choices'][0]['message']['content']
+        )
+    except Exception:
+        print(response_json)
+        return
 
     chatDAO.add_message(chat_id, assistant_message)
 

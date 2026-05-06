@@ -1,5 +1,4 @@
 {"name": "Claude Sonnet 4.6", "openrouter_reference": "anthropic/claude-sonnet-4.6", "logo_file": "claude.svg"}
-{"name": "Claude Opus 4.6", "openrouter_reference": "anthropic/claude-opus-4.6", "logo_file": "claude.svg"}
 {"name": "DeepSeek V3.2", "openrouter_reference": "deepseek/deepseek-v3.2", "logo_file": "deepseek.png"}
 {"name": "Gemini 3 Flash Preview", "openrouter_reference": "google/gemini-3-flash-preview", "logo_file": "gemini.png"}
 {"name": "MiMo-V2-Pro", "openrouter_reference": "xiaomi/mimo-v2-pro", "logo_file": "xiaomi.png"}
