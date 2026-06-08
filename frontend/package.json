@@ -13,7 +13,9 @@
   "type": "commonjs",
   "dependencies": {
     "dompurify": "^3.4.1",
-    "marked": "^18.0.2"
+    "katex": "^0.17.0",
+    "marked": "^18.0.2",
+    "marked-katex-extension": "^5.1.10"
   },
   "devDependencies": {
     "vite": "^8.0.10"

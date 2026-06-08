@@ -1,5 +1,8 @@
 
 import {marked} from 'marked';
+import markedKatex from "marked-katex-extension";
+marked.use(markedKatex({ throwOnError: false }));
+
 import DOMPurify from "dompurify";
 
 export {createModelEl, createChatEl, toChatElId, fromChatElId, createActiveChatTitleEl, createActiveChatMessageEl, assert, markdownToHtml};

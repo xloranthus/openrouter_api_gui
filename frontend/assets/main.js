@@ -3,6 +3,8 @@ import {Message, Chat, ChatWithMessages, ChatTitleWrapper, LLM} from './models.j
 import {Client} from './client.js';
 import {createModelEl, createChatEl, toChatElId, fromChatElId, createActiveChatTitleEl, createActiveChatMessageEl, assert, markdownToHtml} from './utils.js';
 
+import "katex/dist/katex.min.css";
+
 const HOST = 'localhost';
 const PORT = 55001;
 const API_BASE_URL = `http://${HOST}:${PORT}/api`;
